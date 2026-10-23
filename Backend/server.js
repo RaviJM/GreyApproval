@@ -1,48 +1,40 @@
 const express = require("express");
 const cors = require("cors");
+require("dotenv").config();
+
+const authRoutes = require("./routes/authRoutes");
+const qrRoutes = require("./routes/qrRoutes");
+const authenticateToken = require("./middleware/authMiddleware");
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 
+// Public API
 app.get("/", (req, res) => {
-  res.send("QR Code API is running!");
+  res.json({ message: "Backend is running!" });
 });
 
-app.post("/api/generateQR", (req, res) => {
-  const amount = Number(req.body.amount);
+// Public authentication APIs
+app.use("/api/auth", authRoutes);
 
-  if (
-    !Number.isFinite(amount) ||
-    amount <= 0 ||
-    Math.round(amount * 100) !== amount * 100
-  ) {
-    return res.status(400).json({
-      message: "Enter a valid amount with at most two decimal places.",
-    });
-  }
+// All routes mounted below this middleware require authentication
+app.use("/api", authenticateToken);
 
-  const pa = "ravi.mak2003@oksbi";
-  const pn = "Ravi Makwana";
-  const am = amount.toFixed(2);
-  const cu = "INR";
-  const aid = "uGICAgIC_sZiASw"; // id is specific to account
+// Protected APIs
+app.use("/api/qr", qrRoutes);
 
-  // Encode only the payee name
-  const paymentUrl =
-    `upi://pay?pa=${pa}` +
-    `&pn=${encodeURIComponent(pn)}` +
-    `&am=${am}` +
-    `&cu=${cu}` +
-    `&aid=${aid}`;
-
+// Example protected API to test authentication
+app.get("/api/profile", (req, res) => {
   res.json({
-    message: "QR generated successfully",
-    paymentUrl,
+    message: "Authenticated successfully!",
+    userId: req.user.userId,
   });
 });
 
-app.listen(3000, () => {
-  console.log("Server running on http://localhost:3000");
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
