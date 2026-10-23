@@ -49,7 +49,7 @@ function Dashboard() {
 
   return (
     <div>
-      <h2>Grey Approver</h2>
+      <h2>BetXDeposit</h2>
 
       <button onClick={logout}>Logout</button>
 
