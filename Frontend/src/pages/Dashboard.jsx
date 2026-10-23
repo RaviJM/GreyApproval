@@ -1,32 +1,56 @@
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
-function Dashboard() {
+export default function Dashboard() {
   const navigate = useNavigate();
   const { userId, logout } = useAuth();
+
+  // Temporary empty array until we connect the API.
+  // Later, transaction records will come from the backend.
+  const transactions = [];
+
+  function handleLogout() {
+    logout();
+    navigate("/login", { replace: true });
+  }
+
+  function formatDateTime(dateTime) {
+    if (!dateTime) return "-";
+
+    return new Date(dateTime).toLocaleString("en-IN", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
+  }
 
   return (
     <main className="page-container">
       <header className="topbar">
         <div>
-          <p className="eyebrow">BetXDeposit</p>
+          <div className="eyebrow">BetXDeposit</div>
           <h1>Dashboard</h1>
-          <p className="muted">Manage your payment collection activity.</p>
+          <p className="muted">
+            Manage your payment QR codes and transactions.
+          </p>
         </div>
 
         <div className="account-actions">
           <div className="user-info">
-            <span className="user-avatar">
-              {userId ? String(userId).charAt(0).toUpperCase() : "U"}
-            </span>
+            <div className="user-avatar">
+              {(userId || "U").charAt(0).toUpperCase()}
+            </div>
 
             <div>
-              <span className="user-label">Signed in as</span>
+              <span className="user-label">Logged in as</span>
               <strong>{userId || "User"}</strong>
             </div>
           </div>
 
-          <button className="button button-secondary" onClick={logout}>
+          <button className="button button-secondary" onClick={handleLogout}>
             Logout
           </button>
         </div>
@@ -34,9 +58,9 @@ function Dashboard() {
 
       <section className="welcome-section">
         <div>
-          <h2>Welcome back</h2>
+          <h2>Welcome back!</h2>
           <p className="muted">
-            Create a payment QR code or review your transaction history.
+            Generate a QR code to start a payment request.
           </p>
         </div>
 
@@ -44,56 +68,60 @@ function Dashboard() {
           className="button button-primary"
           onClick={() => navigate("/generate-qr")}
         >
-          <span aria-hidden="true">＋</span> Generate QR
+          + Generate QR
         </button>
       </section>
 
       <section className="panel history-panel">
         <div className="section-heading">
           <div>
-            <h2>Transaction history</h2>
-            <p className="muted">Your recent payment collection activity.</p>
+            <h2>Transaction History</h2>
+            <p className="muted">View your generated payment QR codes.</p>
           </div>
-
-          <span className="coming-soon">History API pending</span>
         </div>
 
         <div className="table-wrapper">
           <table className="transactions-table">
             <thead>
               <tr>
-                <th>ID</th>
-                <th>User ID</th>
+                <th>S.No.</th>
+                <th>Transaction ID</th>
                 <th>Amount</th>
                 <th>Status</th>
-                <th>Created at</th>
-                <th>Updated at</th>
+                <th>QR Generated At</th>
               </tr>
             </thead>
 
             <tbody>
-              <tr>
-                <td colSpan={6} className="empty-state">
-                  <div className="empty-icon" aria-hidden="true">
-                    ↗
-                  </div>
-                  <strong>No transactions to display</strong>
-                  <p className="muted">
-                    Your transactions will appear here once the history API is
-                    connected.
-                  </p>
-                </td>
-              </tr>
+              {transactions.length > 0 ? (
+                transactions.map((transaction, index) => (
+                  <tr key={transaction.id}>
+                    <td>{index + 1}</td>
+                    <td>{transaction.transaction_uid}</td>
+                    <td>₹{Number(transaction.amount).toFixed(2)}</td>
+                    <td>{transaction.status}</td>
+                    <td>{formatDateTime(transaction.createdAt)}</td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={4} className="empty-state">
+                    <div className="empty-icon">₹</div>
+                    <strong>No transactions yet</strong>
+                    <p className="muted">
+                      Your generated QR code transactions will appear here.
+                    </p>
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
       </section>
 
       <footer className="dashboard-footer">
-        Grey Approver · Payment collection dashboard
+        BetXDeposit · Payment Management
       </footer>
     </main>
   );
 }
-
-export default Dashboard;

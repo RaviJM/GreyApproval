@@ -7,6 +7,7 @@ function GenerateQR() {
   const navigate = useNavigate();
 
   const [amount, setAmount] = useState("");
+  const [transactionId, setTransactionId] = useState(null);
   const [upiUrl, setUpiUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -33,6 +34,7 @@ function GenerateQR() {
       }
 
       setUpiUrl(data.paymentUrl);
+      setTransactionId(data.transactionId);
     } catch (err) {
       setError(err.message || "Something went wrong");
     } finally {
@@ -103,6 +105,11 @@ function GenerateQR() {
             </div>
 
             <p className="amount-display">₹{Number(amount).toFixed(2)}</p>
+
+            <p>
+              <u>Transaction ID-</u>
+              <b> {transactionId} </b>
+            </p>
 
             <button
               className="button button-primary"
