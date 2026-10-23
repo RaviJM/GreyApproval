@@ -4,6 +4,7 @@ import ProtectedRoute from "./routes/ProtectedRoute";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
+import GenerateQR from "./pages/GenerateQR";
 
 function HomeRedirect() {
   const { token } = useAuth();
@@ -22,6 +23,7 @@ export default function App() {
 
           <Route element={<ProtectedRoute />}>
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/generate-qr" element={<GenerateQR />} />
           </Route>
 
           <Route path="*" element={<HomeRedirect />} />

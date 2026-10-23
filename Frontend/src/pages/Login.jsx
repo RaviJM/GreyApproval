@@ -30,7 +30,7 @@ export default function Login() {
         return;
       }
 
-      login(data.token);
+      login(data.token, data.userId);
       navigate("/dashboard", { replace: true });
     } catch {
       setError("Cannot connect to the server.");
