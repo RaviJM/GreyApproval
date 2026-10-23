@@ -97,7 +97,7 @@ export default function Dashboard() {
                 transactions.map((transaction, index) => (
                   <tr key={transaction.id}>
                     <td>{index + 1}</td>
-                    <td>{transaction.transaction_uid}</td>
+                    <td>{transaction.transactionId}</td>
                     <td>₹{Number(transaction.amount).toFixed(2)}</td>
                     <td>{transaction.status}</td>
                     <td>{formatDateTime(transaction.createdAt)}</td>
