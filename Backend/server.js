@@ -25,14 +25,6 @@ app.use("/api", authenticateToken);
 // Protected APIs
 app.use("/api/qr", qrRoutes);
 
-// Example protected API to test authentication
-app.get("/api/profile", (req, res) => {
-  res.json({
-    message: "Authenticated successfully!",
-    userId: req.user.userId,
-  });
-});
-
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
