@@ -6,6 +6,10 @@ const authRoutes = require("./routes/authRoutes");
 const qrRoutes = require("./routes/qrRoutes");
 const authenticateToken = require("./middleware/authMiddleware");
 
+const operatorAuthRoutes = require("./routes/operatorAuthRoutes");
+const operatorRoutes = require("./routes/operatorRoutes");
+const authenticateOperatorToken = require("./middleware/operatorAuthMiddleware");
+
 const app = express();
 
 app.use(cors());
@@ -16,14 +20,17 @@ app.get("/", (req, res) => {
   res.json({ message: "Backend is running!" });
 });
 
-// Public authentication APIs
+// Public client authentication
 app.use("/api/auth", authRoutes);
 
-// All routes mounted below this middleware require authentication
-app.use("/api", authenticateToken);
+// Public operator login
+app.use("/api/operator/auth", operatorAuthRoutes);
 
-// Protected APIs
-app.use("/api/qr", qrRoutes);
+// Client APIs: require the client JWT
+app.use("/api/qr", authenticateToken, qrRoutes);
+
+// Operator APIs: require the operator JWT
+app.use("/api/operator", authenticateOperatorToken, operatorRoutes);
 
 const PORT = process.env.PORT || 3000;
 
