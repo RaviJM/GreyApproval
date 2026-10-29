@@ -1,13 +1,46 @@
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useEffect, useState } from "react";
+import { apiFetch } from "../services/api";
 
 export default function Dashboard() {
   const navigate = useNavigate();
   const { userId, logout } = useAuth();
 
-  // Temporary empty array until we connect the API.
-  // Later, transaction records will come from the backend.
-  const transactions = [];
+  const [transactions, setTransactions] = useState([]);
+  const [loadingTransactions, setLoadingTransactions] = useState(true);
+  const [transactionError, setTransactionError] = useState("");
+  const [refreshing, setRefreshing] = useState(false);
+
+  const fetchTransactions = async (isRefresh = false) => {
+    try {
+      if (isRefresh) {
+        setRefreshing(true);
+      } else {
+        setLoadingTransactions(true);
+      }
+
+      setTransactionError("");
+
+      const response = await apiFetch("/api/qr/transactions");
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Unable to fetch transaction history.");
+      }
+
+      setTransactions(data.transactions);
+    } catch (error) {
+      setTransactionError(error.message);
+    } finally {
+      setLoadingTransactions(false);
+      setRefreshing(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTransactions();
+  }, []);
 
   function handleLogout() {
     logout();
@@ -78,6 +111,20 @@ export default function Dashboard() {
             <h2>Transaction History</h2>
             <p className="muted">View your generated payment QR codes.</p>
           </div>
+
+          <button
+            className="button button-secondary refresh-button"
+            onClick={() => fetchTransactions(true)}
+            disabled={refreshing}
+            title="Refresh transaction history"
+          >
+            <span
+              className={refreshing ? "refresh-icon spinning" : "refresh-icon"}
+            >
+              ↻
+            </span>
+            {refreshing ? "Refreshing..." : "Refresh"}
+          </button>
         </div>
 
         <div className="table-wrapper">
@@ -93,19 +140,38 @@ export default function Dashboard() {
             </thead>
 
             <tbody>
-              {transactions.length > 0 ? (
+              {loadingTransactions ? (
+                <tr>
+                  <td colSpan={5} className="empty-state">
+                    Loading transactions...
+                  </td>
+                </tr>
+              ) : transactionError ? (
+                <tr>
+                  <td colSpan={5} className="empty-state">
+                    {transactionError}
+                  </td>
+                </tr>
+              ) : transactions.length > 0 ? (
                 transactions.map((transaction, index) => (
                   <tr key={transaction.id}>
                     <td>{index + 1}</td>
                     <td>{transaction.transactionId}</td>
                     <td>₹{Number(transaction.amount).toFixed(2)}</td>
-                    <td>{transaction.status}</td>
+                    <td>
+                      {{
+                        0: "Processing",
+                        1: "Success",
+                        2: "Declined",
+                        3: "Expired",
+                      }[transaction.status] ?? "Unknown"}
+                    </td>
                     <td>{formatDateTime(transaction.createdAt)}</td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan={4} className="empty-state">
+                  <td colSpan={5} className="empty-state">
                     <div className="empty-icon">₹</div>
                     <strong>No transactions yet</strong>
                     <p className="muted">

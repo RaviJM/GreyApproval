@@ -68,4 +68,41 @@ router.post("/generateQR", async (req, res) => {
   }
 });
 
+// GET /api/qr/transactions
+router.get("/transactions", async (req, res) => {
+  const userId = req.user?.userId;
+
+  if (!userId) {
+    return res.status(401).json({
+      message: "User authentication required.",
+    });
+  }
+
+  try {
+    const result = await pool.query(
+      `SELECT
+         id,
+         transaction_uid AS "transactionId",
+         amount,
+         status,
+         created_at AS "createdAt",
+         updated_at AS "updatedAt"
+       FROM transactions
+       WHERE user_id = $1
+       ORDER BY created_at DESC`,
+      [userId],
+    );
+
+    return res.status(200).json({
+      transactions: result.rows,
+    });
+  } catch (error) {
+    console.error("Transaction listing failed:", error);
+
+    return res.status(500).json({
+      message: "Unable to fetch transaction history.",
+    });
+  }
+});
+
 module.exports = router;
