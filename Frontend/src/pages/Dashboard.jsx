@@ -11,6 +11,7 @@ export default function Dashboard() {
   const [loadingTransactions, setLoadingTransactions] = useState(true);
   const [transactionError, setTransactionError] = useState("");
   const [refreshing, setRefreshing] = useState(false);
+  const [wallet, setWallet] = useState("0.00");
 
   const fetchTransactions = async (isRefresh = false) => {
     try {
@@ -30,6 +31,7 @@ export default function Dashboard() {
       }
 
       setTransactions(data.transactions);
+      setWallet(data.wallet ?? "0.00");
     } catch (error) {
       setTransactionError(error.message);
     } finally {
@@ -72,6 +74,10 @@ export default function Dashboard() {
         </div>
 
         <div className="account-actions">
+          <div className="wallet-info">
+            <span className="wallet-label">Wallet Balance</span>
+            <strong>₹{Number(wallet).toFixed(2)}</strong>
+          </div>
           <div className="user-info">
             <div className="user-avatar">
               {(userId || "U").charAt(0).toUpperCase()}

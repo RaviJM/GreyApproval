@@ -93,7 +93,21 @@ router.get("/transactions", async (req, res) => {
       [userId],
     );
 
+    const walletResult = await pool.query(
+      `SELECT wallet
+       FROM users
+       WHERE id = $1`,
+      [userId],
+    );
+
+    if (walletResult.rows.length === 0) {
+      return res.status(404).json({
+        message: "User not found.",
+      });
+    }
+
     return res.status(200).json({
+      wallet: walletResult.rows[0].wallet,
       transactions: result.rows,
     });
   } catch (error) {

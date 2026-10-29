@@ -614,3 +614,25 @@ h1 {
     transform: rotate(360deg);
   }
 }
+
+.wallet-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  padding: 8px 14px;
+  border: 1px solid #dcefe3;
+  border-radius: 12px;
+  background: #f0faf4;
+  white-space: nowrap;
+}
+
+.wallet-label {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.wallet-info strong {
+  font-size: 16px;
+  color: #15803d;
+}
