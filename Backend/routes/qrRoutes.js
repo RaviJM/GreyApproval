@@ -69,6 +69,8 @@ router.post("/generateQR", async (req, res) => {
 });
 
 // GET /api/qr/transactions
+
+// GET /api/qr/transactions?page=1
 router.get("/transactions", async (req, res) => {
   const userId = req.user?.userId;
 
@@ -78,7 +80,37 @@ router.get("/transactions", async (req, res) => {
     });
   }
 
+  // Pagination
+  const page = req.query.page === undefined ? 1 : Number(req.query.page);
+
+  if (!Number.isSafeInteger(page) || page < 1) {
+    return res.status(400).json({
+      message: "Page must be a positive integer.",
+    });
+  }
+
+  const pageSize = 10;
+  const offset = (page - 1) * pageSize;
+
+  if (!Number.isSafeInteger(offset)) {
+    return res.status(400).json({
+      message: "Invalid page number.",
+    });
+  }
+
   try {
+    // Fetch total transaction count for this user.
+    const countResult = await pool.query(
+      `SELECT COUNT(*) AS total
+       FROM transactions
+       WHERE user_id = $1`,
+      [userId],
+    );
+
+    const totalRecords = Number(countResult.rows[0].total);
+    const totalPages = Math.ceil(totalRecords / pageSize);
+
+    // Fetch only the requested page.
     const result = await pool.query(
       `SELECT
          id,
@@ -89,10 +121,12 @@ router.get("/transactions", async (req, res) => {
          updated_at AS "updatedAt"
        FROM transactions
        WHERE user_id = $1
-       ORDER BY created_at DESC`,
-      [userId],
+       ORDER BY created_at DESC, id DESC
+       LIMIT $2 OFFSET $3`,
+      [userId, pageSize, offset],
     );
 
+    // Fetch current wallet balance.
     const walletResult = await pool.query(
       `SELECT wallet
        FROM users
@@ -108,6 +142,10 @@ router.get("/transactions", async (req, res) => {
 
     return res.status(200).json({
       wallet: walletResult.rows[0].wallet,
+      page,
+      pageSize,
+      totalRecords,
+      totalPages,
       transactions: result.rows,
     });
   } catch (error) {
