@@ -524,3 +524,411 @@ button:disabled {
     padding: 26px;
   }
 }
+
+/* Status badge and action buttons */
+.status-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.transaction-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.action-button {
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 5px 9px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background 0.15s ease,
+    opacity 0.15s ease;
+}
+
+.action-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.action-reject {
+  color: #b91c1c;
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+
+.action-reject:hover:not(:disabled) {
+  background: #fee2e2;
+}
+
+.action-confirm {
+  color: #15803d;
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+}
+
+.action-confirm:hover:not(:disabled) {
+  background: #dcfce7;
+}
+
+.action-revert {
+  color: #c2410c;
+  background: #fff7ed;
+  border-color: #fed7aa;
+}
+
+.action-revert:hover:not(:disabled) {
+  background: #ffedd5;
+}
+
+.action-complete {
+  color: #1d4ed8;
+  background: #eff6ff;
+  border-color: #bfdbfe;
+}
+
+.action-complete:hover:not(:disabled) {
+  background: #dbeafe;
+}
+
+/* ================================
+   TRANSACTION CONFIRMATION MODAL
+================================ */
+
+.confirmation-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(4px);
+  animation: overlayFade 0.2s ease;
+}
+
+.confirmation-modal {
+  width: 100%;
+  max-width: 440px;
+  padding: 26px;
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.2);
+  animation: modalAppear 0.22s ease;
+}
+
+@keyframes overlayFade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modalAppear {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.modal-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-icon {
+  width: 42px;
+  height: 42px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 12px;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.modal-close {
+  width: 30px;
+  height: 30px;
+  border: none;
+  border-radius: 8px;
+  background: #f1f5f9;
+  color: #64748b;
+  font-size: 21px;
+  cursor: pointer;
+}
+
+.modal-close:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.modal-eyebrow {
+  margin: 20px 0 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.3px;
+  color: #94a3b8;
+}
+
+.confirmation-modal h2 {
+  margin: 0;
+  font-size: 21px;
+  font-weight: 750;
+  color: #1e293b;
+}
+
+.modal-description {
+  margin: 8px 0 20px;
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* Amount section */
+
+.modal-amount-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding: 19px 12px;
+  border-radius: 13px;
+}
+
+.modal-amount-card span {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.modal-amount-card strong {
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: -0.8px;
+}
+
+/* Transaction details */
+
+.modal-details {
+  margin-top: 18px;
+  padding: 0 2px;
+}
+
+.modal-detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 15px;
+  padding: 11px 0;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.modal-detail-row:last-child {
+  border-bottom: none;
+}
+
+.modal-detail-row span {
+  flex-shrink: 0;
+  color: #64748b;
+  font-size: 12px;
+}
+
+.modal-detail-row strong {
+  max-width: 65%;
+  text-align: right;
+  overflow-wrap: anywhere;
+  color: #334155;
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.modal-transaction-id {
+  font-family: monospace;
+  font-size: 11px !important;
+}
+
+/* Modal buttons */
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+.modal-actions button {
+  flex: 1;
+  min-height: 42px;
+  border-radius: 9px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.modal-actions button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.modal-cancel-button {
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  color: #475569;
+}
+
+.modal-cancel-button:hover:not(:disabled) {
+  background: #f8fafc;
+}
+
+.modal-confirm-button {
+  border: none;
+  color: #ffffff;
+}
+
+/* CONFIRM theme - Green */
+
+.modal-confirm .modal-icon {
+  color: #15803d;
+  background: #dcfce7;
+}
+
+.modal-confirm .modal-amount-card {
+  background: #f0fdf4;
+}
+
+.modal-confirm .modal-amount-card strong {
+  color: #15803d;
+}
+
+.modal-confirm-confirm {
+  background: #16a34a;
+}
+
+.modal-confirm-confirm:hover:not(:disabled) {
+  background: #15803d;
+}
+
+/* REJECT theme - Red */
+
+.modal-reject .modal-icon {
+  color: #dc2626;
+  background: #fee2e2;
+}
+
+.modal-reject .modal-amount-card {
+  background: #fef2f2;
+}
+
+.modal-reject .modal-amount-card strong {
+  color: #dc2626;
+}
+
+.modal-confirm-reject {
+  background: #dc2626;
+}
+
+.modal-confirm-reject:hover:not(:disabled) {
+  background: #b91c1c;
+}
+
+/* Mobile layout */
+
+@media (max-width: 480px) {
+  .confirmation-modal {
+    padding: 21px;
+  }
+
+  .confirmation-modal h2 {
+    font-size: 19px;
+  }
+
+  .modal-amount-card strong {
+    font-size: 29px;
+  }
+
+  .modal-detail-row {
+    gap: 8px;
+  }
+}
+
+/* Slightly larger table contents */
+.operator-table th {
+  font-size: 13px;
+}
+
+.operator-table td {
+  font-size: 14px;
+}
+
+.operator-table .transaction-id {
+  font-size: 12px;
+}
+
+.operator-table .status-badge {
+  font-size: 12px;
+}
+
+.operator-table .amount-cell {
+  font-size: 14px;
+  font-weight: 650;
+}
+
+/* REVERT theme - Orange */
+
+.modal-revert .modal-icon {
+  color: #c2410c;
+  background: #ffedd5;
+}
+
+.modal-revert .modal-amount-card {
+  background: #fff7ed;
+}
+
+.modal-revert .modal-amount-card strong {
+  color: #c2410c;
+}
+
+.modal-confirm-revert {
+  background: #ea580c;
+}
+
+.modal-confirm-revert:hover:not(:disabled) {
+  background: #c2410c;
+}
+
+/* COMPLETE theme - Blue */
+
+.modal-complete .modal-icon {
+  color: #1d4ed8;
+  background: #dbeafe;
+}
+
+.modal-complete .modal-amount-card {
+  background: #eff6ff;
+}
+
+.modal-complete .modal-amount-card strong {
+  color: #1d4ed8;
+}
+
+.modal-confirm-complete {
+  background: #2563eb;
+}
+
+.modal-confirm-complete:hover:not(:disabled) {
+  background: #1d4ed8;
+}

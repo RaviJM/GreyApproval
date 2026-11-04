@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router-dom";
 import { apiFetch } from "../services/api";
 
@@ -6,17 +8,16 @@ const tabs = [
   { label: "Pending", value: 0 },
   { label: "Confirmed", value: 1 },
   { label: "Rejected", value: 2 },
+  { label: "Completed", value: 3 },
   { label: "Reverted", value: 4 },
-  { label: "Completed", value: 5 },
 ];
 
 const statusLabels = {
   0: "Pending",
   1: "Confirmed",
   2: "Rejected",
-  3: "Expired",
+  3: "Completed",
   4: "Reverted",
-  5: "Completed",
 };
 
 export default function OperatorDashboard() {
@@ -30,6 +31,9 @@ export default function OperatorDashboard() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState("");
+  const [processingAction, setProcessingAction] = useState(null);
+  const [selectedTransaction, setSelectedTransaction] = useState(null);
+  const [pendingAction, setPendingAction] = useState(null);
 
   const logout = useCallback(() => {
     localStorage.removeItem("operatorToken");
@@ -104,6 +108,55 @@ export default function OperatorDashboard() {
   }
 
   const username = localStorage.getItem("operatorUsername") || "Operator";
+
+  async function handleTransactionAction(transaction, action) {
+    const transactionId = String(transaction.id);
+
+    setProcessingAction({
+      id: transactionId,
+      action,
+    });
+
+    try {
+      const response = await apiFetch(
+        `/api/operator/transactions/${encodeURIComponent(transactionId)}/${action}`,
+        {
+          method: "POST",
+        },
+      );
+
+      const data = await response.json();
+
+      if (response.status === 401) {
+        logout();
+        return;
+      }
+
+      if (!response.ok) {
+        throw new Error(data.message || "Unable to update transaction.");
+      }
+
+      toast.success(data.message, {
+        autoClose: 2000,
+      });
+
+      setSelectedTransaction(null);
+      setPendingAction(null);
+
+      await fetchTransactions(true);
+    } catch (error) {
+      toast.error(error.message || "Unable to connect to the server.", {
+        autoClose: 3000,
+      });
+    } finally {
+      setProcessingAction(null);
+    }
+  }
+
+  function openActionModal(transaction, action) {
+    setSelectedTransaction(transaction);
+    setPendingAction(action);
+  }
 
   return (
     <main className="operator-page">
@@ -238,15 +291,105 @@ export default function OperatorDashboard() {
                       <td className="amount-cell">
                         ₹{Number(transaction.amount).toFixed(2)}
                       </td>
+
                       <td>
-                        <span
-                          className={`status-badge status-${statusLabels[
-                            transaction.status
-                          ]?.toLowerCase()}`}
-                        >
-                          {statusLabels[transaction.status] || "Unknown"}
-                        </span>
+                        <div className="status-cell">
+                          <span
+                            className={`status-badge status-${statusLabels[
+                              transaction.status
+                            ]?.toLowerCase()}`}
+                          >
+                            {statusLabels[transaction.status] || "Unknown"}
+                          </span>
+
+                          {/*
+      Pending tab: Reject + Confirm
+    */}
+                          {selectedTab === 0 && (
+                            <div className="transaction-actions">
+                              <button
+                                type="button"
+                                className="action-button action-reject"
+                                disabled={
+                                  processingAction?.id ===
+                                  String(transaction.id)
+                                }
+                                onClick={() =>
+                                  openActionModal(transaction, "reject")
+                                }
+                              >
+                                {processingAction?.id ===
+                                  String(transaction.id) &&
+                                processingAction.action === "reject"
+                                  ? "Rejecting..."
+                                  : "Reject"}
+                              </button>
+
+                              <button
+                                type="button"
+                                className="action-button action-confirm"
+                                disabled={
+                                  processingAction?.id ===
+                                  String(transaction.id)
+                                }
+                                onClick={() =>
+                                  openActionModal(transaction, "confirm")
+                                }
+                              >
+                                {processingAction?.id ===
+                                  String(transaction.id) &&
+                                processingAction.action === "confirm"
+                                  ? "Confirming..."
+                                  : "Confirm"}
+                              </button>
+                            </div>
+                          )}
+
+                          {/*
+      Confirmed tab: Revert + Complete
+    */}
+                          {selectedTab === 1 && (
+                            <div className="transaction-actions">
+                              <button
+                                type="button"
+                                className="action-button action-revert"
+                                disabled={
+                                  processingAction?.id ===
+                                  String(transaction.id)
+                                }
+                                onClick={() =>
+                                  openActionModal(transaction, "revert")
+                                }
+                              >
+                                {processingAction?.id ===
+                                  String(transaction.id) &&
+                                processingAction.action === "revert"
+                                  ? "Reverting..."
+                                  : "Revert"}
+                              </button>
+
+                              <button
+                                type="button"
+                                className="action-button action-complete"
+                                disabled={
+                                  processingAction?.id ===
+                                  String(transaction.id)
+                                }
+                                onClick={() =>
+                                  openActionModal(transaction, "complete")
+                                }
+                              >
+                                {processingAction?.id ===
+                                  String(transaction.id) &&
+                                processingAction.action === "complete"
+                                  ? "Completing..."
+                                  : "Complete"}
+                              </button>
+                            </div>
+                          )}
+                        </div>
                       </td>
+
                       <td>{formatDateTime(transaction.createdAt)}</td>
                     </tr>
                   ))
@@ -295,6 +438,148 @@ export default function OperatorDashboard() {
           BetXDeposit · Operator Console
         </footer>
       </section>
+      <ToastContainer
+        position="top-right"
+        autoClose={2000}
+        hideProgressBar
+        newestOnTop
+        closeOnClick
+        pauseOnHover
+        theme="light"
+      />
+
+      {selectedTransaction && pendingAction && (
+        <div
+          className="confirmation-overlay"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget && !processingAction) {
+              setSelectedTransaction(null);
+              setPendingAction(null);
+            }
+          }}
+        >
+          <div
+            className={`confirmation-modal modal-${pendingAction}`}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="confirmation-title"
+          >
+            <div className="modal-top">
+              <div className="modal-icon">
+                {
+                  {
+                    confirm: "✓",
+                    reject: "×",
+                    revert: "↶",
+                    complete: "✓✓",
+                  }[pendingAction]
+                }
+              </div>
+
+              <button
+                type="button"
+                className="modal-close"
+                disabled={!!processingAction}
+                onClick={() => {
+                  setSelectedTransaction(null);
+                  setPendingAction(null);
+                }}
+              >
+                ×
+              </button>
+            </div>
+
+            <p className="modal-eyebrow">TRANSACTION ACTION</p>
+
+            <h2 id="confirmation-title">
+              {
+                {
+                  confirm: "Confirm this transaction?",
+                  reject: "Reject this transaction?",
+                  revert: "Revert this transaction?",
+                  complete: "Complete this transaction?",
+                }[pendingAction]
+              }
+            </h2>
+
+            <p className="modal-description">
+              {
+                {
+                  confirm:
+                    "Please review the payment details before confirming.",
+                  reject:
+                    "Are you sure you want to reject this payment request?",
+                  revert:
+                    "Please confirm that the amount has actually been reverted to the client's account.",
+                  complete:
+                    "Are you sure you want to mark this transaction as completed?",
+                }[pendingAction]
+              }
+            </p>
+
+            <div className="modal-amount-card">
+              <span>Transaction Amount</span>
+              <strong>₹{Number(selectedTransaction.amount).toFixed(2)}</strong>
+            </div>
+
+            <div className="modal-details">
+              <div className="modal-detail-row">
+                <span>Client Name</span>
+                <strong>{selectedTransaction.userName}</strong>
+              </div>
+
+              <div className="modal-detail-row">
+                <span>Transaction ID</span>
+                <strong className="modal-transaction-id">
+                  {selectedTransaction.transactionId}
+                </strong>
+              </div>
+
+              <div className="modal-detail-row">
+                <span>QR Generated At</span>
+                <strong>{formatDateTime(selectedTransaction.createdAt)}</strong>
+              </div>
+            </div>
+
+            <div className="modal-actions">
+              <button
+                type="button"
+                className="modal-cancel-button"
+                disabled={!!processingAction}
+                onClick={() => {
+                  setSelectedTransaction(null);
+                  setPendingAction(null);
+                }}
+              >
+                Cancel
+              </button>
+
+              <button
+                type="button"
+                className={`modal-confirm-button modal-confirm-${pendingAction}`}
+                disabled={!!processingAction}
+                onClick={() =>
+                  handleTransactionAction(selectedTransaction, pendingAction)
+                }
+              >
+                {processingAction
+                  ? {
+                      confirm: "Confirming...",
+                      reject: "Rejecting...",
+                      revert: "Reverting...",
+                      complete: "Completing...",
+                    }[pendingAction]
+                  : {
+                      confirm: "Yes, Confirm",
+                      reject: "Yes, Reject",
+                      revert: "Yes, Revert",
+                      complete: "Yes, Complete",
+                    }[pendingAction]}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
