@@ -3,11 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { apiFetch } from "../services/api";
 
 const tabs = [
-  { label: "Pending", value: "pending" },
-  { label: "Confirmed", value: "confirmed" },
-  { label: "Rejected", value: "rejected" },
-  { label: "Reverted", value: "reverted" },
-  { label: "Completed", value: "completed" },
+  { label: "Pending", value: 0 },
+  { label: "Confirmed", value: 1 },
+  { label: "Rejected", value: 2 },
+  { label: "Reverted", value: 4 },
+  { label: "Completed", value: 5 },
 ];
 
 const statusLabels = {
@@ -22,7 +22,7 @@ const statusLabels = {
 export default function OperatorDashboard() {
   const navigate = useNavigate();
 
-  const [selectedTab, setSelectedTab] = useState("pending");
+  const [selectedTab, setSelectedTab] = useState(0);
   const [page, setPage] = useState(1);
   const [transactions, setTransactions] = useState([]);
   const [totalPages, setTotalPages] = useState(0);
@@ -215,7 +215,13 @@ export default function OperatorDashboard() {
                   <tr>
                     <td colSpan={6} className="table-message">
                       <div className="empty-icon">₹</div>
-                      <strong>No {selectedTab} transactions</strong>
+                      <strong>
+                        No{" "}
+                        {tabs
+                          .find((tab) => tab.value === selectedTab)
+                          ?.label.toLowerCase()}{" "}
+                        transactions
+                      </strong>
                       <p className="muted">
                         Transactions matching this status will appear here.
                       </p>

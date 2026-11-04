@@ -3,22 +3,13 @@ const pool = require("../db/db");
 
 const router = express.Router();
 
-const statusMap = {
-  pending: 0,
-  confirmed: 1,
-  rejected: 2,
-  reverted: 4,
-  completed: 5,
-};
-
-// GET /api/operator/transactions?status=pending&page=1
+// GET /api/operator/transactions?status=0&page=1
 router.get("/transactions", async (req, res) => {
-  const statusName = String(req.query.status || "pending").toLowerCase();
-  const status = statusMap[statusName];
+  const status = Number(req.query.status ?? 0);
 
   const page = Number.parseInt(req.query.page, 10);
 
-  if (status === undefined) {
+  if (!Number.isInteger(status) || ![0, 1, 2, 4, 5].includes(status)) {
     return res.status(400).json({
       message: "Invalid transaction status.",
     });
@@ -61,7 +52,7 @@ router.get("/transactions", async (req, res) => {
     );
 
     return res.status(200).json({
-      status: statusName,
+      status,
       page,
       pageSize,
       totalRecords,
