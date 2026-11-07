@@ -164,7 +164,7 @@ export default function OperatorDashboard() {
         <div className="operator-brand">
           <div className="brand-mark small">B</div>
           <div>
-            <p className="eyebrow">BETXDEPOSIT</p>
+            <p className="eyebrow">DEPOSIT</p>
             <h1>Operator Console</h1>
           </div>
         </div>
@@ -434,9 +434,7 @@ export default function OperatorDashboard() {
           )}
         </section>
 
-        <footer className="operator-footer">
-          BetXDeposit · Operator Console
-        </footer>
+        <footer className="operator-footer">Deposit · Operator Console</footer>
       </section>
       <ToastContainer
         position="top-right"

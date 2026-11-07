@@ -124,7 +124,7 @@ export default function Dashboard() {
           <div className="brand-mark">B</div>
 
           <div>
-            <div className="eyebrow">BETXDEPOSIT</div>
+            <div className="eyebrow">DEPOSIT</div>
             <h1>Dashboard</h1>
             <p className="muted">Your payment activity, all in one place.</p>
           </div>
@@ -310,9 +310,7 @@ export default function Dashboard() {
         )}
       </section>
 
-      <footer className="dashboard-footer">
-        BetXDeposit · Payment Management
-      </footer>
+      <footer className="dashboard-footer">Deposit · Payment Management</footer>
     </main>
   );
 }

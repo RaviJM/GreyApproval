@@ -47,7 +47,7 @@ export default function Login() {
       <form className="login-card" onSubmit={handleSubmit}>
         <div className="brand-mark">B</div>
 
-        <p className="eyebrow">BETXDEPOSIT</p>
+        <p className="eyebrow">DEPOSIT</p>
         <h1>Operator login</h1>
         <p className="muted">Sign in to manage payment transactions.</p>
 
